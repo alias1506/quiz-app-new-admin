@@ -1,131 +1,166 @@
-# 🎓 Quiz Admin Panel
+# Quiz Admin Panel
 
-[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://reactjs.org/)
-[![Express](https://img.shields.io/badge/Express-4.x-000000?logo=express&logoColor=white)](https://expressjs.com/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
-[![Groq AI](https://img.shields.io/badge/AI-Groq-orange?logo=probot&logoColor=white)](https://groq.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+> Modern admin dashboard for quiz management with AI-powered question generation
 
-A professional, feature-rich admin dashboard for managing quiz questions, conceptual rounds, and multi-part structures with AI-powered question generation.
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)](https://reactjs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-339933?logo=node.js)](https://nodejs.org/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?logo=mongodb)](https://www.mongodb.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
----
+## Quick Start
 
-## 🚀 Quick Start
-
-### 1. Install Dependencies
-Initialize both frontend and backend dependencies using the root installer:
 ```bash
+# Install dependencies
 npm run install-all
+
+# Configure environment (see below)
+cp backend/.env.example backend/.env
+
+# Initialize admin account
+cd backend && npm run init-admin
+
+# Start application
+cd .. && npm start
 ```
 
-### 2. Configure Environment
-Create a `.env` file in the `backend/` directory (see [Environment Setup](#-environment-setup) below).
-
-### 3. Initialize Admin
-Create your primary admin account using the built-in script:
-```bash
-cd backend
-npm run init-admin
-```
-
-### 4. Run Application
-Start both the React development server and the Express backend simultaneously:
-```bash
-npm start
-```
-- **Dashboard**: `http://localhost:3000`
-- **Backend API**: `http://localhost:5000`
+**Access Points:**
+- Frontend: `http://localhost:3000`
+- Backend: `http://localhost:5000`
 
 ---
 
-## ✨ Key Features
+## Environment Configuration
 
-- **🎯 Round & Part Management**: Create complex quiz structures with conceptual rounds (e.g., Round 1) divided into multiple parts (e.g., Physics, Chemistry).
-- **🤖 AI Question Generation**: Seamless integration with **Groq AI** (Llama 3.3 70B) for ultra-fast, context-aware question creation.
-- **📊 Real-time Analytics**: Monitor quiz status, round distribution, and user performance at a glance.
-- **🔐 Secure Auth**: Robust admin authentication with session-based security and bcrypt hashing.
-- **🛠️ Bulk Operations**: Efficiently manage large datasets with bulk delete and multi-set assignments.
-- **📱 Responsive Design**: Premium UI built with **CoreUI** and **Lucide Icons** for a smooth experience on all devices.
-
----
-
-## 📁 Project Structure
-
-```text
-quiz-app-new-admin/
-├── frontend/             # React Application (Vite + CoreUI)
-│   ├── src/
-│   │   ├── components/   # Reusable UI elements
-│   │   ├── services/     # API integration layer
-│   │   └── views/        # Dashboard, Quiz & Round management
-│   └── package.json
-├── backend/              # Node.js Express Server
-│   ├── models/           # Mongoose Data Models
-│   ├── routes/           # API Endpoint controllers
-│   ├── services/         # Business logic (Groq AI, etc.)
-│   └── .env              # Server configurations
-├── package.json          # Monorepo management scripts
-└── README.md             # Documentation
-```
-
----
-
-## ⚙️ Environment Setup
-
-### Backend Configuration (`backend/.env`)
+Create `backend/.env` with the following variables:
 
 ```env
-# Database Connection
-MONGO_URI=mongodb+srv://<db_user>:<db_password>@cluster.mongodb.net/Quiz?retryWrites=true&w=majority
+# Database
+MONGO_URI=mongodb+srv://user:password@cluster.mongodb.net/Quiz?retryWrites=true&w=majority
 
-# Groq AI API Key (Get from https://console.groq.com/keys)
-GROQ_API_KEY=gsk_your_free_api_key_here
+# AI Integration
+GROQ_API_KEY=gsk_your_groq_api_key_here
 
-# Server Settings
+# Server
 PORT=5000
 NODE_ENV=development
 
 # Security
-SESSION_SECRET=your_long_random_secret_string
+SESSION_SECRET=your_random_session_secret_key
 
-# Default Admin (Used during npm run init-admin)
-ADMIN_EMAIL=admin@example.com
-ADMIN_PASSWORD=secure_password_here
+# Default Admin Credentials
+ADMIN_EMAIL=admin@quiz.com
+ADMIN_PASSWORD=Admin@123
 ADMIN_NAME=Admin User
+```
+
+> **Note:** Change admin credentials immediately after first login
+
+---
+
+## Features
+
+- **AI-Powered Questions** — Generate quiz questions using Groq AI (Llama 3.3 70B)
+- **Round Management** — Organize quizzes into conceptual rounds with multiple parts
+- **Bulk Operations** — Efficiently manage large datasets
+- **Real-time Analytics** — Monitor quiz performance and user engagement
+- **Secure Authentication** — Session-based auth with bcrypt password hashing
+- **Responsive Design** — Modern UI built with CoreUI and Lucide icons
+
+---
+
+## Tech Stack
+
+**Frontend**
+- React 19 + Vite
+- CoreUI 5
+- Chart.js
+- Axios
+
+**Backend**
+- Express.js 4
+- MongoDB + Mongoose
+- Groq SDK
+- Express Session
+
+---
+
+## Project Structure
+
+```
+quiz-app-new-admin/
+├── frontend/          # React application
+│   └── src/
+│       ├── components/    # Reusable UI components
+│       ├── views/         # Page components
+│       └── services/      # API integration
+├── backend/           # Express server
+│   ├── models/        # Mongoose schemas
+│   ├── routes/        # API endpoints
+│   ├── services/      # Business logic
+│   └── middleware/    # Auth & validation
+└── package.json       # Monorepo scripts
 ```
 
 ---
 
-## 🏗️ Tech Stack
+## Available Scripts
 
-### Frontend
-- **React 19** & **Vite**
-- **CoreUI** (Enterprise-grade UI Kit)
-- **Lucide React** (Modern Iconography)
-- **Chart.js** (Data Visualization)
-- **Axios** (API Requests)
+```bash
+npm start              # Run frontend + backend concurrently
+npm run client         # Frontend only (port 3000)
+npm run server         # Backend only (port 5000)
+npm run install-all    # Install all dependencies
+```
 
-### Backend
-- **Express.js** & **Node.js**
-- **MongoDB** (NoSQL Database)
-- **Mongoose** (ODM)
-- **Groq SDK** (AI Question Engine)
-- **Express Session** (Authentication)
-
----
-
-## 🆘 Troubleshooting
-
-- **Admin Login Fails**: Ensure you have run `npm run init-admin` and that your `MONGO_URI` is correctly pointing to the "Quiz" database.
-- **AI Not Generating**: Check your `GROQ_API_KEY` status and ensure you haven't exceeded the free-tier rate limits (30 requests/min).
-- **CORS Errors**: The backend is configured to accept requests from `http://localhost:3000` by default. Update `server.js` if running on a different port.
+**Backend scripts:**
+```bash
+npm run init-admin     # Create admin account
+npm run dev            # Development mode with nodemon
+```
 
 ---
 
-## 📄 License
+## Default Admin Access
 
-This project is licensed under the **MIT License**. See the `LICENSE` file for details.
+After running `npm run init-admin`, use these credentials:
 
-**Status**: ✅ Production Ready
-**Version**: 1.2.0
-**Last Updated**: January 2026
+- **Email:** `admin@quiz.com`
+- **Password:** `Admin@123`
+
+⚠️ **Security:** Update credentials in `.env` before initialization or change them after first login
+
+---
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/login` | Admin authentication |
+| GET | `/api/questions` | Fetch all questions |
+| POST | `/api/questions` | Create question |
+| GET | `/api/rounds` | Fetch all rounds |
+| POST | `/api/quiz` | Create new quiz |
+
+---
+
+## Troubleshooting
+
+**Admin Login Fails**
+- Verify `npm run init-admin` was executed
+- Check `MONGO_URI` points to correct database
+
+**AI Generation Fails**
+- Validate `GROQ_API_KEY` is active
+- Check rate limits (30 req/min on free tier)
+
+**CORS Issues**
+- Frontend must run on `http://localhost:3000`
+- Update `server.js` CORS config if needed
+
+---
+
+## License
+
+MIT © 2026
+
+**Version:** 1.2.0
