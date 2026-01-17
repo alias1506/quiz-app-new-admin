@@ -1,0 +1,621 @@
+@use "@coreui/coreui/scss/coreui" as * with ($enable-deprecation-messages: false,
+);
+@use "@coreui/chartjs/scss/coreui-chartjs";
+@use "vendors/simplebar";
+
+body {
+  background-color: var(--cui-tertiary-bg);
+  font-family: 'Roboto', sans-serif !important;
+
+  /* Custom Sleek Scrollbar */
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--cui-border-color-translucent);
+    border-radius: 10px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--cui-border-color);
+  }
+}
+
+/* Also apply to all scrollable elements */
+* {
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--cui-border-color-translucent);
+    border-radius: 10px;
+  }
+
+  &:hover::-webkit-scrollbar-thumb {
+    background: var(--cui-border-color);
+  }
+}
+
+.wrapper {
+  width: 100%;
+  padding-inline: var(--cui-sidebar-occupy-start, 0) var(--cui-sidebar-occupy-end, 0);
+  will-change: auto;
+  @include transition(padding .15s);
+}
+
+/* Smooth transitions */
+.transition-all {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Hover shadow effects */
+.hover-shadow {
+  transition: box-shadow 0.3s ease-in-out;
+
+  &:hover {
+    box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.15) !important;
+  }
+}
+
+.hover-shadow-lg {
+  transition: box-shadow 0.3s ease-in-out;
+
+  &:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+  }
+}
+
+/* Cursor pointer */
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* Hover background for light theme */
+.hover-bg-light-opacity {
+  transition: background-color 0.2s ease-in-out;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.03) !important;
+  }
+}
+
+.wrapper {
+
+  // Adjust for custom sidebar width
+  @media (min-width: 768px) {
+    padding-left: 280px;
+  }
+}
+
+.header>.container-fluid,
+.sidebar-header {
+  min-height: calc(4rem + 1px); // stylelint-disable-line function-disallowed-list
+}
+
+.sidebar-brand-full {
+  margin-left: 3px;
+}
+
+.sidebar-header {
+  .nav-underline-border {
+    --cui-nav-underline-border-link-padding-x: 1rem;
+    --cui-nav-underline-border-gap: 0;
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    min-height: calc(4rem + 1px); // stylelint-disable-line function-disallowed-list
+  }
+}
+
+.sidebar-toggler {
+  margin-inline-start: auto;
+}
+
+.sidebar-narrow,
+.sidebar-narrow-unfoldable:not(:hover) {
+  .sidebar-toggler {
+    margin-inline-end: auto;
+  }
+}
+
+.header>.container-fluid+.container-fluid {
+  min-height: 3rem;
+}
+
+.footer {
+  min-height: calc(3rem + 1px); // stylelint-disable-line function-disallowed-list
+}
+
+@include color-mode(dark) {
+  body {
+    background-color: var(--cui-dark-bg-subtle);
+  }
+
+  .footer {
+    --cui-footer-bg: var(--cui-body-bg);
+  }
+}
+
+// Custom sidebar width
+.sidebar {
+  --cui-sidebar-width: 280px !important;
+}
+
+.sidebar-narrow-unfoldable {
+  --cui-sidebar-narrow-width: 280px !important;
+}
+
+// Custom submenu items styling
+.sidebar .nav-group-items {
+  .nav-link {
+    padding-left: 3rem;
+
+    .nav-icon {
+      margin-left: 0;
+      margin-right: 0.5rem;
+    }
+  }
+}
+
+// Global Minimal Design: Remove focus rings and active borders
+.form-control,
+.form-select,
+.btn,
+.form-check-input,
+.input-group-text {
+  &:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+  }
+}
+
+// Subtle Idle Borders
+.form-control,
+.form-select,
+.input-group-text {
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+@include color-mode(dark) {
+
+  .form-control,
+  .form-select,
+  .input-group-text {
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+}
+
+// Ensure input groups look unified when one part is focused
+.input-group:focus-within {
+
+  .input-group-text,
+  .form-control {
+    border-color: rgba(255, 255, 255, 0.12) !important;
+  }
+}
+
+// Custom Architectural Dropdown
+.dropdown-menu-custom {
+  background-color: var(--cui-body-bg) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(10px);
+  position: absolute !important;
+  top: 100% !important;
+  margin-top: 4px !important;
+  z-index: 9999 !important;
+  display: block !important;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition:
+    opacity 0.2s cubic-bezier(0.165, 0.84, 0.44, 1),
+    transform 0.2s cubic-bezier(0.165, 0.84, 0.44, 1),
+    visibility 0.2s !important;
+  transform-origin: top center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+
+  &.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .dropdown-item {
+    transition: all 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+    border-radius: 8px !important;
+    margin: 2px 6px;
+    width: calc(100% - 12px);
+    opacity: 0;
+    transform: translateX(-4px);
+    cursor: pointer !important;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.05) !important;
+      color: var(--cui-primary) !important;
+      transform: translateX(0);
+    }
+
+    &.active,
+    &:active {
+      background-color: var(--cui-primary) !important;
+      color: white !important;
+    }
+  }
+
+  &.show .dropdown-item {
+    opacity: 1;
+    transform: translateX(0);
+
+    @for $i from 1 through 10 {
+      &:nth-child(#{$i}) {
+        transition-delay: #{$i * 0.03}s;
+      }
+    }
+  }
+}
+
+@include color-mode(dark) {
+  .dropdown-menu-custom {
+    background-color: #1a1c23 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+}
+
+.hover-bg-light-opacity:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+// Dropdown Chevron Animation
+.dropdown-chevron {
+  transition: transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+  will-change: transform;
+}
+
+.show .dropdown-chevron,
+.dropdown.show .dropdown-chevron {
+  transform: rotate(180deg);
+}
+
+// Hide any accidental default carets
+.dropdown-toggle::after {
+  display: none !important;
+}
+
+// Minimal Action Buttons (No BG, bolder icon on hover)
+.btn-action-minimal {
+  background: transparent !important;
+  border: none !important;
+  padding: 8px !important;
+  transition: all 0.2s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  opacity: 0.85;
+
+  &.btn-edit {
+    color: var(--cui-warning) !important;
+  }
+
+  &.btn-delete {
+    color: var(--cui-danger) !important;
+  }
+
+  &:hover {
+    background: transparent !important;
+    opacity: 1;
+
+    svg {
+      stroke-width: 2.8px !important;
+      transform: scale(1.15);
+    }
+  }
+
+  svg {
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    stroke-width: 2px !important;
+  }
+}
+
+// Custom Premium Checkbox (Matching architectural design)
+.form-check-input {
+  background-color: transparent !important;
+  border: 2px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 6px !important;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  width: 1.25rem !important;
+  height: 1.25rem !important;
+  margin-top: 0 !important;
+
+  &:checked {
+    background-color: var(--cui-primary) !important;
+    border-color: var(--cui-primary) !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e") !important;
+    transform: scale(1.05);
+  }
+
+  &:hover:not(:checked) {
+    border-color: var(--cui-primary) !important;
+    background-color: rgba(0, 123, 255, 0.05) !important;
+  }
+}
+
+// Bulk Delete Button Hover Effect (Deprecated in favor of standardized class but kept for safety if used elsewhere)
+.hover-bg-danger-opacity:hover {
+  background-color: rgba(229, 83, 83, 0.2) !important;
+  transform: translateY(-1px);
+}
+
+/* Standardized Bulk Delete Button (Image 1) */
+.btn-delete-selected-standard {
+  background-color: rgba(229, 83, 83, 0.08) !important;
+  color: #e55353 !important;
+  border: 1px solid rgba(229, 83, 83, 0.1) !important;
+  border-radius: 8px !important;
+  height: 38px;
+  padding: 0 1.25rem !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  transition: all 0.2s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
+  box-shadow: none !important;
+
+  &:hover {
+    background-color: rgba(229, 83, 83, 0.15) !important;
+    transform: translateY(-1px);
+    border-color: rgba(229, 83, 83, 0.25) !important;
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  svg {
+    color: #e55353 !important;
+  }
+}
+
+// Helper class to disable animations and force simpler display logic
+// Helper class for strict positioning + smooth open/close animations
+.dropdown-menu-strict-anim {
+  // 1. Strict Positioning (Forces menu BELOW input)
+  position: absolute !important;
+  top: 100% !important;
+  bottom: auto !important;
+  left: 0 !important;
+  right: auto !important;
+  margin-top: 5px !important;
+  z-index: 9999 !important; // Ensure dropdown appears above all overflow containers
+
+  // 2. Animation Logic (Persist display to allow transition)
+  display: block !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  transform: translateY(-10px) !important; // Starts/Ends strictly "above" (closer to input)
+
+  transition: all 0.2s cubic-bezier(0.165, 0.84, 0.44, 1) !important; // Smooth Ease
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+
+  &.show {
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+  }
+
+  .dropdown-item {
+    &:active {
+      background-color: #5856d6 !important;
+    }
+  }
+}
+
+.delete-option-btn {
+  svg {
+    transition: stroke-width 0.2s ease;
+  }
+
+  &:hover svg {
+    stroke-width: 3px;
+  }
+}
+
+.hover-bold-effect {
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  user-select: none;
+
+  &:hover {
+    font-weight: 700 !important;
+    opacity: 0.8;
+  }
+}
+
+/* Spinning animation for refresh icons */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+// Standardized Refresh Button (Image 0)
+.btn-refresh-standard {
+  background-color: #5856d6 !important;
+  border: none !important;
+  color: white !important;
+  border-radius: 8px !important;
+  height: 38px;
+  padding: 0 1.25rem !important;
+  font-weight: 600 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  transition: all 0.2s ease-in-out !important;
+  box-shadow: none !important;
+
+  &:hover {
+    background-color: #4b49c1 !important;
+    box-shadow: none !important;
+  }
+
+
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none !important;
+  }
+}
+
+// Standardized Input Field (Image 1)
+.quiz-input-standard {
+  background-color: #2a2c39 !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-radius: 8px !important;
+  height: 38px !important;
+  color: white !important;
+  font-size: 13px !important;
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+  transition: all 0.2s ease !important;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.3) !important;
+    font-weight: 400;
+  }
+
+  &:focus {
+    background-color: #313442 !important;
+    border-color: rgba(88, 86, 214, 0.5) !important;
+    box-shadow: 0 0 0 3px rgba(88, 86, 214, 0.1) !important;
+  }
+}
+
+.quiz-textarea-standard {
+  background-color: #2a2c39 !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-radius: 12px !important;
+  color: white !important;
+  font-size: 14px !important;
+  padding: 1rem !important;
+  transition: all 0.2s ease !important;
+  line-height: 1.5;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.3) !important;
+  }
+
+  &:focus {
+    background-color: #313442 !important;
+    border-color: rgba(88, 86, 214, 0.5) !important;
+    box-shadow: 0 0 0 3px rgba(88, 86, 214, 0.1) !important;
+  }
+}
+
+// Standardized Search Container (Adjustments for Search Icons)
+.search-container-standard {
+  .quiz-input-standard {
+    padding-left: 2.5rem !important;
+    padding-right: 2.5rem !important;
+  }
+
+  svg.search-icon {
+    left: 12px !important;
+    opacity: 0.6;
+    transition: all 0.2s ease;
+  }
+
+  &:focus-within svg.search-icon {
+    opacity: 1;
+    color: #5856d6;
+  }
+
+  .clear-btn {
+    right: 4px !important;
+    color: rgba(255, 255, 255, 0.4);
+
+    &:hover {
+      color: white;
+    }
+  }
+}
+
+/* ====================================
+   CARD PADDING STANDARDIZATION
+   Equal padding on all sides for consistency
+   ==================================== */
+
+// Ensure all card headers have consistent padding
+.card-header,
+.app-card-header,
+[class*="CCardHeader"],
+.modal-header {
+  padding: 1rem !important; // p-4 equivalent (1rem = 16px)
+}
+
+// Ensure all card bodies have consistent padding
+.card-body,
+.app-card-body,
+[class*="CCardBody"],
+.modal-body {
+  padding: 1rem !important; // p-4 equivalent
+}
+
+// Ensure all card footers have consistent padding
+.card-footer,
+.app-card-footer,
+[class*="CCardFooter"],
+.modal-footer {
+  padding: 1rem !important; // p-4 equivalent
+}
+
+// Override Bootstrap's default card spacing
+.card {
+  > .card-header,
+  > .card-body,
+  > .card-footer {
+    padding: 1rem !important;
+  }
+}
+
+// Specific overrides for cards that need to maintain existing functionality
+// but ensure equal padding on all sides
+.overflow-auto,
+.overflow-hidden {
+  &.card-body,
+  &[class*="CCardBody"] {
+    padding: 1rem !important;
+  }
+}

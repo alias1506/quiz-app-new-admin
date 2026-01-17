@@ -1,0 +1,24 @@
+{
+  "name": "quiz-admin",
+  "version": "1.0.0",
+  "description": "Quiz Admin Panel - Full Stack Application",
+  "scripts": {
+    "client": "cd frontend && npm start",
+    "server": "cd backend && npm start",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "start": "npm run dev",
+    "install-all": "npm install && cd frontend && npm install && cd ../backend && npm install"
+  },
+  "keywords": [
+    "quiz",
+    "admin",
+    "react",
+    "express",
+    "mongodb"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
