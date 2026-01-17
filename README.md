@@ -35,7 +35,7 @@ Create `backend/.env` with the following variables:
 
 ```env
 # Database
-MONGO_URI=mongodb+srv://user:password@cluster.mongodb.net/Quiz?retryWrites=true&w=majority
+MONGO_URI=your_mongodb_connection_string_here
 
 # AI Integration
 GROQ_API_KEY=gsk_your_groq_api_key_here
