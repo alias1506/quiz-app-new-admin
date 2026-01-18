@@ -83,20 +83,6 @@ app.get("/api/health", (req, res) => {
     });
 });
 
-// Root endpoint
-app.get("/", (req, res) => {
-    res.json({
-        message: "Quiz Admin Backend API",
-        version: "1.0.0",
-        endpoints: {
-            auth: "/api/auth",
-            questions: "/api/questions",
-            sets: "/api/sets",
-            users: "/api/users",
-            health: "/api/health",
-        },
-    });
-});
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -125,6 +111,20 @@ if (process.env.NODE_ENV === "production") {
     });
 } else {
     // 404 handler for development
+    app.get("/", (req, res) => {
+        res.json({
+            message: "Quiz Admin Backend API",
+            version: "1.0.0",
+            endpoints: {
+                auth: "/api/auth",
+                questions: "/api/questions",
+                sets: "/api/sets",
+                users: "/api/users",
+                health: "/api/health",
+            },
+        });
+    });
+
     app.use((req, res) => {
         res.status(404).json({
             success: false,
