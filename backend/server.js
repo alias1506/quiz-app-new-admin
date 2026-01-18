@@ -163,19 +163,25 @@ io.on("connection", (socket) => {
         console.log(`❌ Client disconnected: ${socket.id}`);
     });
 
-    // Listen for user events from the quiz app
+    // Listen for user events from the student backend
     socket.on("user:joined", (data) => {
-        console.log("👤 User joined:", data);
+        console.log("👤 User joined event received:", data);
+        // Broadcast to all admin clients
+        io.emit("user:joined", data);
         io.emit("user:update", data);
     });
 
     socket.on("user:attemptStarted", (data) => {
-        console.log("▶️ Attempt started:", data);
+        console.log("▶️ Attempt started event received:", data);
+        // Broadcast to all admin clients
+        io.emit("user:attemptStarted", data);
         io.emit("user:update", data);
     });
 
     socket.on("user:scoreUpdated", (data) => {
-        console.log("📊 Score updated:", data);
+        console.log("📊 Score updated event received:", data);
+        // Broadcast to all admin clients
+        io.emit("user:scoreUpdated", data);
         io.emit("user:update", data);
     });
 });
