@@ -40,6 +40,14 @@
         "sass": "^1.97.0",
         "vite": "^7.3.0"
     },
+    "optionalDependencies": {
+        "@rollup/rollup-linux-x64-gnu": "*",
+        "@rollup/rollup-linux-x64-musl": "*",
+        "@rollup/rollup-linux-arm64-gnu": "*",
+        "@rollup/rollup-linux-arm64-musl": "*",
+        "@esbuild/linux-x64": "*",
+        "@esbuild/linux-arm64": "*"
+    },
     "devDependencies": {
         "eslint": "^9.39.2",
         "eslint-config-prettier": "^10.1.8",
