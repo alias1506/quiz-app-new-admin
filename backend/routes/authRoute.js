@@ -45,15 +45,24 @@ router.post("/login", async (req, res) => {
         req.session.name = admin.name;
         req.session.role = admin.role;
 
-        res.json({
-            success: true,
-            message: "Login successful",
-            admin: {
-                id: admin._id,
-                email: admin.email,
-                name: admin.name,
-                role: admin.role,
-            },
+        req.session.save((err) => {
+            if (err) {
+                console.error("Session save error:", err);
+                return res.status(500).json({
+                    success: false,
+                    message: "Error saving session",
+                });
+            }
+            res.json({
+                success: true,
+                message: "Login successful",
+                admin: {
+                    id: admin._id,
+                    email: admin.email,
+                    name: admin.name,
+                    role: admin.role,
+                },
+            });
         });
     } catch (error) {
         console.error("Login error:", error);

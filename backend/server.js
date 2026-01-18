@@ -7,6 +7,9 @@ const path = require("path");
 
 const app = express();
 
+// Trust proxy for secure cookies on Render
+app.set("trust proxy", 1);
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -53,7 +56,7 @@ app.use(
             secure: process.env.NODE_ENV === "production",
             httpOnly: true,
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+            sameSite: process.env.NODE_ENV === "production" ? "lax" : "lax",
         },
     })
 );
