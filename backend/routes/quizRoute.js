@@ -77,7 +77,8 @@ router.put("/:id", async (req, res) => {
 
         // Notify the user-facing app via webhook
         try {
-            await axios.post('http://localhost:3000/api/quiz/notify-update');
+            const studentAppUrl = process.env.STUDENT_APP_URL || 'http://localhost:3000';
+            await axios.post(`${studentAppUrl}/api/quiz/notify-update`);
         } catch (err) {
             console.error("Failed to notify student app:", err.message);
         }
@@ -96,7 +97,8 @@ router.delete("/:id", async (req, res) => {
 
         // Notify the user-facing app via webhook
         try {
-            await axios.post('http://localhost:3000/api/quiz/notify-update');
+            const studentAppUrl = process.env.STUDENT_APP_URL || 'http://localhost:3000';
+            await axios.post(`${studentAppUrl}/api/quiz/notify-update`);
         } catch (err) {
             console.error("Failed to notify student app:", err.message);
         }

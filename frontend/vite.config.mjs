@@ -8,6 +8,7 @@ export default defineConfig(() => {
     base: './',
     build: {
       outDir: 'build',
+      chunkSizeWarningLimit: 2000,
     },
     css: {
       postcss: {
