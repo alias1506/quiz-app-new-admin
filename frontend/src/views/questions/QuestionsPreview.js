@@ -143,9 +143,27 @@ const QuestionsPreview = () => {
             return
         }
 
+        // Prepare trimmed data to avoid whitespace issues
+        const trimmedData = {
+            ...editFormData,
+            question: editFormData.question.trim(),
+            options: editFormData.options.map(opt => String(opt).trim()),
+            correctAnswer: String(editFormData.correctAnswer).trim()
+        }
+
+        // Verification check before sending
+        if (!trimmedData.options.includes(trimmedData.correctAnswer)) {
+            Toast.fire({
+                icon: 'error',
+                title: 'Invalid Correct Answer',
+                text: 'The correct answer must exactly match one of the options.'
+            })
+            return
+        }
+
         setUpdateLoading(true)
         try {
-            const res = await questionsAPI.update(editingQuestion._id, editFormData)
+            const res = await questionsAPI.update(editingQuestion._id, trimmedData)
             if (res.data.question) {
                 setQuestions(questions.map(q => q._id === editingQuestion._id ? res.data.question : q))
                 setEditModalVisible(false)

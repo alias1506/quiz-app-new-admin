@@ -21,6 +21,7 @@ import {
 } from '@coreui/react'
 import { usersAPI, questionsAPI, setsAPI } from '../../services/api'
 import { Toast, Modal } from '../../utils/sweetalert'
+import { formatText } from '../../utils/formatText'
 import Table from '../../components/Table'
 import { Trash2, RefreshCw, User, Mail, Calendar, Activity, ChevronDown, RotateCcw, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, MoreHorizontal, Clock, Search, X, Filter, BookOpen } from 'lucide-react'
 import { io } from 'socket.io-client'
@@ -272,7 +273,7 @@ const UsersManagement = () => {
                           <User size={16} />
                         </div>
                         <div style={{ overflow: 'hidden' }}>
-                          <div className="fw-bold mb-0 text-body-emphasis text-truncate">{user.name || "N/A"}</div>
+                          <div className="fw-bold mb-0 text-body-emphasis text-truncate" dangerouslySetInnerHTML={{ __html: formatText(user.name || "N/A") }}></div>
                           <div className="small text-body-secondary d-flex align-items-center text-truncate">
                             <Mail size={12} className="me-1 flex-shrink-0" />
                             <span className="text-truncate">{user.email || "N/A"}</span>
@@ -282,11 +283,9 @@ const UsersManagement = () => {
                     </CTableDataCell>
                     <CTableDataCell style={{ width: '15%' }}>
                       <div className="d-flex flex-column">
-                        <div className="fw-bold text-body-emphasis small text-truncate" title={user.quizName}>
-                          {user.quizName || 'N/A'}
+                        <div className="fw-bold text-body-emphasis small text-truncate" title={user.quizName} dangerouslySetInnerHTML={{ __html: formatText(user.quizName || 'N/A') }}>
                         </div>
-                        <div className="x-small text-primary fw-medium">
-                          {user.quizPart || 'N/A'}
+                        <div className="x-small text-primary fw-medium" dangerouslySetInnerHTML={{ __html: formatText(user.quizPart || 'N/A') }}>
                         </div>
                       </div>
                     </CTableDataCell>

@@ -18,6 +18,7 @@ import {
 } from '@coreui/react'
 import { usersAPI, quizzesAPI } from '../../services/api'
 import { Trophy, Medal, Clock, User, Calendar, Search, ChevronDown, Filter, RefreshCw, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, Folder, Trash2 } from 'lucide-react'
+import { formatText } from '../../utils/formatText'
 import Table from '../../components/Table'
 import { format } from 'date-fns'
 
@@ -223,7 +224,7 @@ const Leaderboard = () => {
                                                         <User size={18} />
                                                     </div>
                                                     <div className="overflow-hidden">
-                                                        <div className="fw-bold text-body-emphasis text-truncate small">{user.name || 'Anonymous Player'}</div>
+                                                        <div className="fw-bold text-body-emphasis text-truncate small" dangerouslySetInnerHTML={{ __html: formatText(user.name || 'Anonymous Player') }}></div>
                                                         <div className="x-small text-body-secondary text-truncate opacity-75">{user.email}</div>
                                                     </div>
                                                 </div>

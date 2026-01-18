@@ -169,10 +169,14 @@ router.post("/", async (req, res) => {
                     .json({ message: "At least two options are required" });
             }
 
-            if (!options.includes(correctAnswer)) {
+            // Trim for robustness
+            const trimmedOptions = options.map(opt => String(opt).trim());
+            const trimmedCorrectAnswer = String(correctAnswer).trim();
+
+            if (!trimmedOptions.includes(trimmedCorrectAnswer)) {
                 return res
                     .status(400)
-                    .json({ message: "Correct answer must be one of the options" });
+                    .json({ message: "Correct answer must match one of the options exactly (Case-sensitive, trimmed)" });
             }
 
             // Convert set ID to set name if needed
@@ -245,10 +249,14 @@ router.put("/:id", async (req, res) => {
             .json({ message: "At least two options are required" });
     }
 
-    if (!options.includes(correctAnswer)) {
+    // Trim for robustness
+    const trimmedOptions = options.map(opt => String(opt).trim());
+    const trimmedCorrectAnswer = String(correctAnswer).trim();
+
+    if (!trimmedOptions.includes(trimmedCorrectAnswer)) {
         return res
             .status(400)
-            .json({ message: "Correct answer must be one of the options" });
+            .json({ message: "Correct answer must be one of the options (Check for extra spaces)" });
     }
 
     try {
@@ -273,7 +281,7 @@ router.put("/:id", async (req, res) => {
 
         const updated = await Question.findByIdAndUpdate(
             req.params.id,
-            { question, options, correctAnswer, set: setName },
+            { question: question.trim(), options: trimmedOptions, correctAnswer: trimmedCorrectAnswer, set: setName },
             { new: true, runValidators: true }
         );
 

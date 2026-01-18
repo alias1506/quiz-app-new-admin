@@ -78,8 +78,6 @@ const mathSymbols = {
   'partial': '∂',
   'nabla': '∇',
   'integral': '∫',
-  'sum': '∑',
-  'product': '∏',
   'sqrt': '√',
   'degree': '°',
   'prime': '′',
@@ -90,20 +88,12 @@ const mathSymbols = {
   'uparrow': '↑',
   'downarrow': '↓',
   'leftrightarrow': '↔',
-  'therefore': '∴',
-  'because': '∵',
-  'forall': '∀',
-  'exists': '∃',
-  'in': '∈',
   'notin': '∉',
   'subset': '⊂',
   'supset': '⊃',
   'union': '∪',
   'intersection': '∩',
-  'emptyset': '∅',
-  'angle': '∠',
-  'perpendicular': '⊥',
-  'parallel': '∥'
+  'emptyset': '∅'
 }
 
 export const formatText = (text) => {

@@ -161,12 +161,24 @@ const AddQuestions = () => {
             return
         }
 
+        const trimmedOptions = validOptions.map(opt => opt.trim())
+        const trimmedCorrectAnswer = correctAnswer.trim()
+
+        if (!trimmedOptions.includes(trimmedCorrectAnswer)) {
+            Toast.fire({
+                icon: 'error',
+                title: 'Invalid Correct Answer',
+                text: 'The correct answer must match one of the options exactly.'
+            })
+            return
+        }
+
         setLoading(true)
         try {
             await questionsAPI.create({
-                question: questionText,
-                options: validOptions,
-                correctAnswer,
+                question: questionText.trim(),
+                options: trimmedOptions,
+                correctAnswer: trimmedCorrectAnswer,
                 set: selectedSet
             })
 
