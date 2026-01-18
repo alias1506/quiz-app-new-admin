@@ -39,21 +39,28 @@ const UsersManagement = () => {
     fetchUsers()
 
     // Initialize WebSocket connection
-    const socketURL = import.meta.env.VITE_ADMIN_SOCKET_URL || 'http://localhost:8000'
+    // In production, connect to the same origin (admin backend)
+    const socketURL = import.meta.env.VITE_ADMIN_SOCKET_URL || window.location.origin || 'http://localhost:8000'
+    console.log('🔌 Connecting to WebSocket:', socketURL)
+    
     const newSocket = io(socketURL, {
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
       reconnectionAttempts: 10,
-      transports: ["websocket"], // Skip polling to avoid 'xhr poll error' on Render
+      transports: ["websocket", "polling"], // Allow fallback to polling
     })
 
     newSocket.on('connect', () => {
-      console.log('✅ Connected to WebSocket server')
+      console.log('✅ Admin WebSocket connected to:', socketURL)
     })
 
     newSocket.on('disconnect', () => {
-      console.log('❌ Disconnected from WebSocket server')
+      console.log('❌ Admin WebSocket disconnected')
+    })
+
+    newSocket.on('connect_error', (error) => {
+      console.error('❌ WebSocket connection error:', error.message)
     })
 
     // Listen for real-time user updates
