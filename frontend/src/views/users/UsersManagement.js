@@ -33,9 +33,58 @@ const UsersManagement = () => {
   const [entriesPerPage] = useState(10) // Changed to 10 for pagination demo visibility
   const [currentPage, setCurrentPage] = useState(1)
   const [searchTerm, setSearchTerm] = useState('')
+  const [socket, setSocket] = useState(null)
 
   useEffect(() => {
     fetchUsers()
+    
+    // Initialize WebSocket connection
+    const socketURL = import.meta.env.VITE_ADMIN_SOCKET_URL || 'http://localhost:8000'
+    const newSocket = io(socketURL, {
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: 5,
+    })
+
+    newSocket.on('connect', () => {
+      console.log('✅ Connected to WebSocket server')
+    })
+
+    newSocket.on('disconnect', () => {
+      console.log('❌ Disconnected from WebSocket server')
+    })
+
+    // Listen for real-time user updates
+    newSocket.on('user:update', (data) => {
+      console.log('📢 Real-time update received:', data)
+      // Silently refresh users data without showing loading spinner
+      fetchUsers(true)
+    })
+
+    newSocket.on('user:joined', (data) => {
+      console.log('👤 New user joined:', data)
+      fetchUsers(true)
+    })
+
+    newSocket.on('user:attemptStarted', (data) => {
+      console.log('▶️ User started attempt:', data)
+      fetchUsers(true)
+    })
+
+    newSocket.on('user:scoreUpdated', (data) => {
+      console.log('📊 User score updated:', data)
+      fetchUsers(true)
+    })
+
+    setSocket(newSocket)
+
+    // Cleanup on unmount
+    return () => {
+      if (newSocket) {
+        newSocket.disconnect()
+      }
+    }
   }, [])
 
   const fetchUsers = async (silent = false) => {
@@ -66,7 +115,6 @@ const UsersManagement = () => {
       text: "This action cannot be undone.",
       icon: 'warning',
       confirmButtonText: 'Yes, Delete',
-      confirmButtonClass: 'btn btn-danger px-4 mx-2', // Override if needed, but Modal has defaults
     })
 
     if (!result.isConfirmed) return

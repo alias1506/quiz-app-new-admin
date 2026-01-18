@@ -74,6 +74,24 @@ router.delete("/:id", async (req, res) => {
     try {
         const deletedRound = await Round.findByIdAndDelete(req.params.id);
         if (!deletedRound) return res.status(404).json({ success: false, message: "Round not found" });
+
+        // Check if this quiz has any remaining rounds
+        const quizId = deletedRound.quiz;
+        if (quizId) {
+            const remainingRounds = await Round.countDocuments({ quiz: quizId });
+
+            // If no rounds left, unpublish the quiz silently
+            if (remainingRounds === 0) {
+                const Quiz = require("../models/quizModel");
+                const quiz = await Quiz.findById(quizId);
+
+                if (quiz && quiz.isPublished) {
+                    quiz.isPublished = false;
+                    await quiz.save();
+                }
+            }
+        }
+
         res.json({ message: "Round deleted successfully" });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });

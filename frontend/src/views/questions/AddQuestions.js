@@ -299,7 +299,7 @@ const AddQuestions = () => {
     }
 
     return (
-        <div className="d-flex flex-column overflow-hidden" style={{ height: 'calc(100vh - 215px)' }}>
+        <div className="d-flex flex-column" style={{ height: 'calc(100vh - 215px)' }}>
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h4 className="mb-0 fw-bold">Add New Question</h4>
@@ -316,7 +316,7 @@ const AddQuestions = () => {
                 </div>
             </div>
 
-            <CCard className="shadow-sm border-0 rounded-3 flex-grow-1 overflow-hidden">
+            <CCard className="shadow-sm border-0 rounded-3 flex-grow-1" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                 <CCardHeader className="bg-transparent border-0 p-4 d-flex justify-content-between align-items-center flex-shrink-0">
                     <div className="d-flex align-items-center text-primary">
                         <Layout size={20} className="me-2" />
@@ -331,17 +331,17 @@ const AddQuestions = () => {
                     </div>
                 </CCardHeader>
 
-                <CCardBody className="p-4 h-100 d-flex flex-column" style={{ minHeight: 0, overflow: 'visible' }}>
+                <CCardBody className="p-4 flex-grow-1 d-flex flex-column" style={{ minHeight: 0, overflow: 'auto' }}>
                     {showAiMode ? (
                         <>
                             <div className="text-center pb-3 flex-shrink-0">
                                 <h5 className="mb-1">AI Question Generator</h5>
                                 <p className="text-body-secondary small mb-0">Enter a topic and specific instructions. AI will handle the rest.</p>
                             </div>
-                            <div className="flex-grow-1 overflow-hidden" style={{ minHeight: 0 }}>
+                            <div className="flex-grow-1" style={{ minHeight: 0, overflow: 'hidden' }}>
                                 <CRow className="h-100 g-4">
                                     {/* Left Column: Inputs */}
-                                    <CCol lg={6} className="h-100" style={{ minHeight: 0, overflow: 'visible' }}>
+                                    <CCol lg={6} className="h-100" style={{ minHeight: 0 }}>
                                         <div className="h-100 d-flex flex-column bg-body rounded-3 border">
                                             <div className="p-3 border-bottom bg-body-tertiary flex-shrink-0">
                                                 <h6 className="fw-bold mb-0 d-flex align-items-center">
@@ -349,7 +349,7 @@ const AddQuestions = () => {
                                                     Generation Settings
                                                 </h6>
                                             </div>
-                                            <div className="flex-grow-1 p-3 d-flex flex-column" style={{ minHeight: 0, overflow: 'visible' }}>
+                                            <div className="flex-grow-1 p-3 d-flex flex-column" style={{ minHeight: 0, overflow: 'auto' }}>
                                                 <div className="flex-shrink-0">
                                                     <CRow className="mb-3 g-3">
                                                         <CCol xs={7}>
@@ -517,10 +517,10 @@ const AddQuestions = () => {
                                 <h5 className="mb-1">Manual Question Editor</h5>
                                 <p className="text-body-secondary small mb-0">Create a new question.</p>
                             </div>
-                            <div className="flex-grow-1 overflow-hidden" style={{ minHeight: 0 }}>
+                            <div className="flex-grow-1" style={{ minHeight: 0, overflow: 'hidden' }}>
                                 <CRow className="h-100 g-4">
                                     {/* Left Column: Question Input */}
-                                    <CCol lg={6} className="h-100" style={{ minHeight: 0, overflow: 'visible' }}>
+                                    <CCol lg={6} className="h-100" style={{ minHeight: 0 }}>
                                         <div className="h-100 d-flex flex-column bg-body rounded-3 border">
                                             <div className="p-3 border-bottom bg-body-tertiary flex-shrink-0">
                                                 <h6 className="fw-bold mb-0 d-flex align-items-center">
@@ -557,7 +557,7 @@ const AddQuestions = () => {
                                     </CCol>
 
                                     {/* Right Column: Answer Options */}
-                                    <CCol lg={6} className="h-100 overflow-hidden" style={{ minHeight: 0 }}>
+                                    <CCol lg={6} className="h-100" style={{ minHeight: 0 }}>
                                         <div className="h-100 d-flex flex-column bg-body rounded-3 border">
                                             <div className="p-3 border-bottom bg-body-tertiary flex-shrink-0">
                                                 <h6 className="fw-bold mb-0 d-flex align-items-center">
@@ -565,7 +565,7 @@ const AddQuestions = () => {
                                                     Answer Options
                                                 </h6>
                                             </div>
-                                            <div className="flex-grow-1 p-3 d-flex flex-column overflow-hidden">
+                                            <div className="flex-grow-1 p-3 d-flex flex-column" style={{ overflow: 'visible', paddingBottom: '150px' }}>
                                                 <div className="mb-2">
                                                     <CFormLabel className="fw-semibold small text-body-secondary text-uppercase d-flex align-items-center gap-2 mb-1">
                                                         <List size={14} />
@@ -599,7 +599,7 @@ const AddQuestions = () => {
                                                     </div>
                                                 </div>
 
-                                                <div className="mb-2">
+                                                <div className="mb-2" style={{ position: 'relative', zIndex: 1000 }}>
                                                     <CFormLabel className="fw-semibold small text-body-secondary text-uppercase d-flex align-items-center gap-2 mb-1">
                                                         <CheckCircle size={14} />
                                                         Correct Answer
@@ -619,9 +619,9 @@ const AddQuestions = () => {
                                                             </CDropdownToggle>
                                                             <CDropdownMenu
                                                                 className="dropdown-menu-custom dropdown-menu-strict-anim w-100 shadow-lg p-1"
-                                                                portal={true}
+                                                                portal={false}
                                                                 placement="bottom-start"
-                                                                style={{ zIndex: 9999 }}
+                                                                style={{ zIndex: 10000 }}
                                                             >
                                                                 {options.map((option, index) => (
                                                                     option.trim() && (

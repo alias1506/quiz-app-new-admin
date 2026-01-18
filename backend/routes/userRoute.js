@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const User = require("../models/userModel");
 const { isAuthenticated } = require("../middleware/authMiddleware");
+const socketService = require("../services/socketService");
 
 // Apply authentication to all routes
 router.use(isAuthenticated);
@@ -24,7 +25,7 @@ router.get("/", async (req, res) => {
 
             if (user.attempts && user.attempts.length > 0) {
                 user.attempts.forEach(attempt => {
-                    const part = attempt.quizPart || 'N/A';
+                    const part = attempt.quizPart || 'NA';
                     if (!attemptsByPart[part]) {
                         attemptsByPart[part] = [];
                     }
@@ -32,7 +33,7 @@ router.get("/", async (req, res) => {
                 });
             } else {
                 // If no attempts array, use the top-level quizPart
-                const part = user.quizPart || 'N/A';
+                const part = user.quizPart || 'NA';
                 attemptsByPart[part] = [];
             }
 
@@ -76,7 +77,7 @@ router.get("/", async (req, res) => {
                 let total = 0;
                 let attemptNumber = null;
                 let timeTaken = null;
-                let quizName = user.quizName || 'N/A';
+                let quizName = user.quizName || 'NA';
 
                 if (partAttempts.length > 0) {
                     const latestAttempt = partAttempts[partAttempts.length - 1];
@@ -84,11 +85,11 @@ router.get("/", async (req, res) => {
                     score = latestAttempt.score !== undefined ? latestAttempt.score : 0;
                     total = latestAttempt.total !== undefined ? latestAttempt.total : 0;
                     timeTaken = latestAttempt.timeTaken !== undefined ? latestAttempt.timeTaken : null;
-                    quizName = latestAttempt.quizName || user.quizName || 'N/A';
+                    quizName = latestAttempt.quizName || user.quizName || 'NA';
                 }
 
                 usersWithData.push({
-                    _id: `${user._id}_${part}`, // Unique ID per user-part combination
+                    _id: `${user._id}---${part.replace(/\//g, '-')}`, // Synthetic unique ID using safe separator
                     userId: user._id, // Original user ID
                     name: user.name,
                     email: user.email,
@@ -144,13 +145,18 @@ router.post("/", async (req, res) => {
 
 // @route   DELETE /api/users/:id
 // @desc    Delete a user or a specific quiz part registration
-router.delete("/:id", async (req, res) => {
+router.delete("*", async (req, res) => {
     try {
-        const idParam = req.params.id;
+        // Capture everything after /users/ strictly
+        const idParam = req.params[0] ? req.params[0].substring(1) : req.url.substring(1);
 
-        if (idParam.includes('_')) {
-            const [userId, ...partParts] = idParam.split('_');
-            const partName = partParts.join('_'); // Rejoin in case part name has underscores
+        // Clean up leading slashes if any
+        let cleanId = idParam.startsWith('/') ? idParam.substring(1) : idParam;
+
+        if (cleanId.includes('---') || cleanId.includes('_')) {
+            const separator = cleanId.includes('---') ? '---' : '_';
+            const [userId, ...partParts] = cleanId.split(separator);
+            const partName = partParts.join(separator).replace(/-/g, '/'); // Try to reverse common sanitize
 
             const user = await User.findById(userId);
             if (!user) {
@@ -158,13 +164,16 @@ router.delete("/:id", async (req, res) => {
             }
 
             // Remove all attempts for this specific part
-            const initialAttemptCount = user.attempts ? user.attempts.length : 0;
             if (user.attempts) {
-                user.attempts = user.attempts.filter(a => a.quizPart !== partName);
+                user.attempts = user.attempts.filter(a => {
+                    const currentPart = a.quizPart || 'NA';
+                    return currentPart !== partName;
+                });
             }
 
             // If this was the user's current displayed part, update it
-            if (user.quizPart === partName) {
+            const userPart = user.quizPart || 'NA';
+            if (userPart === partName) {
                 if (user.attempts && user.attempts.length > 0) {
                     // Switch to the first available part from remaining attempts
                     const nextAttempt = user.attempts[0];
@@ -183,10 +192,28 @@ router.delete("/:id", async (req, res) => {
             // If no more attempts and no more parts, delete user entirely
             if ((!user.attempts || user.attempts.length === 0) && !user.quizPart) {
                 await User.findByIdAndDelete(userId);
+                
+                // Emit WebSocket event for user deletion
+                socketService.emitUserUpdate({ 
+                    action: 'deleted', 
+                    userId,
+                    email: user.email,
+                    name: user.name
+                });
+                
                 return res.json({ message: "User deleted (no data remaining)" });
             }
 
             await user.save();
+            
+            // Emit WebSocket event for user data update
+            socketService.emitUserUpdate({ 
+                action: 'updated', 
+                userId,
+                email: user.email,
+                partRemoved: partName
+            });
+            
             return res.json({ message: `Data for part "${partName}" removed` });
         } else {
             // Delete entire user record
@@ -194,6 +221,15 @@ router.delete("/:id", async (req, res) => {
             if (!deleted) {
                 return res.status(404).json({ message: "User not found" });
             }
+            
+            // Emit WebSocket event for user deletion
+            socketService.emitUserUpdate({ 
+                action: 'deleted', 
+                userId: idParam,
+                email: deleted.email,
+                name: deleted.name
+            });
+            
             res.json({ message: "User record deleted successfully" });
         }
     } catch (err) {
@@ -216,9 +252,10 @@ router.post("/bulk-delete", async (req, res) => {
         const partSpecificMap = {}; // { userId: [partNames] }
 
         ids.forEach(id => {
-            if (id.includes('_')) {
-                const [userId, ...partParts] = id.split('_');
-                const partName = partParts.join('_');
+            if (id.includes('---') || id.includes('_')) {
+                const separator = id.includes('---') ? '---' : '_';
+                const [userId, ...partParts] = id.split(separator);
+                const partName = partParts.join(separator).replace(/-/g, '/');
                 if (!partSpecificMap[userId]) partSpecificMap[userId] = [];
                 partSpecificMap[userId].push(partName);
             } else {
@@ -242,11 +279,15 @@ router.post("/bulk-delete", async (req, res) => {
 
             // Filter out attempts for the specified parts
             if (user.attempts) {
-                user.attempts = user.attempts.filter(a => !partsToDelete.includes(a.quizPart));
+                user.attempts = user.attempts.filter(a => {
+                    const currentPart = a.quizPart || 'NA';
+                    return !partsToDelete.includes(currentPart);
+                });
             }
 
             // Update top-level if necessary
-            if (partsToDelete.includes(user.quizPart)) {
+            const currentUserPart = user.quizPart || 'NA';
+            if (partsToDelete.includes(currentUserPart)) {
                 if (user.attempts && user.attempts.length > 0) {
                     const nextAttempt = user.attempts[0];
                     user.quizPart = nextAttempt.quizPart;
@@ -260,7 +301,13 @@ router.post("/bulk-delete", async (req, res) => {
                     user.total = 0;
                 }
             }
+// Emit WebSocket event for bulk deletion
+        socketService.emitUserUpdate({ 
+            action: 'bulk-deleted', 
+            count: ids.length
+        });
 
+        
             // If user now has no data, delete them
             if ((!user.attempts || user.attempts.length === 0) && !user.quizPart) {
                 await User.findByIdAndDelete(userId);

@@ -3,6 +3,7 @@ const router = express.Router();
 const Quiz = require("../models/quizModel");
 const Round = require("../models/roundModel");
 const { isAuthenticated } = require("../middleware/authMiddleware");
+const socketService = require("../services/socketService");
 
 // Apply authentication
 router.use(isAuthenticated);
@@ -59,8 +60,6 @@ router.post("/", async (req, res) => {
     }
 });
 
-const axios = require("axios");
-
 // Update quiz
 router.put("/:id", async (req, res) => {
     try {
@@ -75,13 +74,14 @@ router.put("/:id", async (req, res) => {
         }
         const updated = await Quiz.findByIdAndUpdate(req.params.id, req.body, { new: true });
 
-        // Notify the user-facing app via webhook
-        try {
-            const studentAppUrl = process.env.STUDENT_APP_URL || 'http://localhost:3000';
-            await axios.post(`${studentAppUrl}/api/quiz/notify-update`);
-        } catch (err) {
-            console.error("Failed to notify student app:", err.message);
-        }
+        // Broadcast quiz update via WebSocket
+        socketService.emitUserUpdate({
+            action: 'quiz-updated',
+            quizId: req.params.id,
+            isPublished: updated.isPublished,
+            quizName: updated.name
+        });
+        console.log("📢 Quiz update broadcasted via WebSocket");
 
         res.json(updated);
     } catch (error) {
@@ -95,13 +95,12 @@ router.delete("/:id", async (req, res) => {
         await Round.deleteMany({ quiz: req.params.id });
         await Quiz.findByIdAndDelete(req.params.id);
 
-        // Notify the user-facing app via webhook
-        try {
-            const studentAppUrl = process.env.STUDENT_APP_URL || 'http://localhost:3000';
-            await axios.post(`${studentAppUrl}/api/quiz/notify-update`);
-        } catch (err) {
-            console.error("Failed to notify student app:", err.message);
-        }
+        // Broadcast quiz deletion via WebSocket
+        socketService.emitUserUpdate({
+            action: 'quiz-deleted',
+            quizId: req.params.id
+        });
+        console.log("📢 Quiz deletion broadcasted via WebSocket");
 
         res.json({ message: "Quiz and its rounds deleted successfully" });
     } catch (error) {

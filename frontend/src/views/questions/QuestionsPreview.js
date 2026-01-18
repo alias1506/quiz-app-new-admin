@@ -112,8 +112,23 @@ const QuestionsPreview = () => {
 
         try {
             await questionsAPI.delete(questionId)
-            setQuestions(questions.filter(q => q._id !== questionId))
+            const updatedQuestions = questions.filter(q => q._id !== questionId)
+            setQuestions(updatedQuestions)
             setSelectedQuestions(selectedQuestions.filter(id => id !== questionId))
+
+            // Check if current page becomes empty after deletion
+            const updatedFiltered = updatedQuestions.filter(q => {
+                const matchesSet = selectedSet === 'all' || q.set?._id === selectedSet || q.set === selectedSet
+                return matchesSet
+            })
+            const currentPageStart = (currentPage - 1) * entriesPerPage
+            const itemsOnCurrentPage = updatedFiltered.slice(currentPageStart, currentPageStart + entriesPerPage)
+
+            // If current page is empty and we're not on page 1, go to previous page
+            if (itemsOnCurrentPage.length === 0 && currentPage > 1) {
+                setCurrentPage(currentPage - 1)
+            }
+
             Toast.fire({
                 icon: 'success',
                 title: 'Question deleted',
@@ -218,8 +233,23 @@ const QuestionsPreview = () => {
 
         try {
             await questionsAPI.bulkDelete(selectedQuestions)
-            setQuestions(questions.filter(q => !selectedQuestions.includes(q._id)))
+            const updatedQuestions = questions.filter(q => !selectedQuestions.includes(q._id))
+            setQuestions(updatedQuestions)
             setSelectedQuestions([])
+
+            // Check if current page becomes empty after deletion
+            const updatedFiltered = updatedQuestions.filter(q => {
+                const matchesSet = selectedSet === 'all' || q.set?._id === selectedSet || q.set === selectedSet
+                return matchesSet
+            })
+            const currentPageStart = (currentPage - 1) * entriesPerPage
+            const itemsOnCurrentPage = updatedFiltered.slice(currentPageStart, currentPageStart + entriesPerPage)
+
+            // If current page is empty and we're not on page 1, go to previous page
+            if (itemsOnCurrentPage.length === 0 && currentPage > 1) {
+                setCurrentPage(currentPage - 1)
+            }
+
             Toast.fire({
                 icon: 'success',
                 title: 'Questions deleted',
@@ -562,7 +592,7 @@ const QuestionsPreview = () => {
                     <CModalTitle className="fw-bold h5 mb-0">Edit Question</CModalTitle>
                 </CModalHeader>
 
-                <CModalBody className="p-4">
+                <CModalBody className="p-4" style={{ overflow: 'visible' }}>
                     <div className="row g-4">
                         {/* LHS: Question & Set */}
                         <div className="col-lg-6 border-end">
@@ -620,7 +650,7 @@ const QuestionsPreview = () => {
                                 </div>
                             </div>
 
-                            <div>
+                            <div style={{ position: 'relative', zIndex: 100000 }}>
                                 <CFormLabel className="fw-bold small text-body-secondary text-uppercase d-flex align-items-center gap-2 mb-2">
                                     <CheckCircle size={14} />
                                     Correct Answer
@@ -638,7 +668,7 @@ const QuestionsPreview = () => {
                                         </span>
                                         <ChevronDown size={14} className="text-body-secondary dropdown-chevron" />
                                     </CDropdownToggle>
-                                    <CDropdownMenu className="dropdown-menu-custom dropdown-menu-strict-anim shadow-lg p-1 border-0 w-100">
+                                    <CDropdownMenu className="dropdown-menu-custom dropdown-menu-strict-anim shadow-lg p-1 border-0 w-100" style={{ zIndex: 100001 }}>
                                         {editFormData.options.map((option, index) => (
                                             option.trim() && (
                                                 <CDropdownItem
@@ -661,7 +691,7 @@ const QuestionsPreview = () => {
                     </div>
                 </CModalBody>
 
-                <CModalFooter className="border-0 pt-0 pb-4 px-4 d-flex justify-content-end gap-2">
+                <CModalFooter className="border-0 pt-0 pb-4 px-4 d-flex justify-content-end gap-2" style={{ position: 'relative', zIndex: 1 }}>
                     <ActionButton
                         variant="secondary"
                         onClick={() => setEditModalVisible(false)}

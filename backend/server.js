@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const session = require("express-session");
 const path = require("path");
+const socketService = require("./services/socketService");
 
 const app = express();
 
@@ -136,12 +137,60 @@ if (process.env.NODE_ENV === "production") {
     });
 }
 
-// Start server
+// Start server with Socket.IO support
 const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => {
+const http = require("http");
+const { Server } = require("socket.io");
+
+const server = http.createServer(app);
+
+// Configure Socket.IO with CORS
+const io = new Server(server, {
+    cors: {
+        origin: process.env.NODE_ENV === "production"
+            ? [process.env.FRONTEND_URL, process.env.USER_APP_URL]
+            : ["http://localhost:8080", "http://localhost:5173", "http://localhost:3000"],
+        methods: ["GET", "POST"],
+        credentials: true,
+    },
+});
+
+// Socket.IO connection handler
+io.on("connection", (socket) => {
+    console.log(`✅ Client connected: ${socket.id}`);
+
+    socket.on("disconnect", () => {
+        console.log(`❌ Client disconnected: ${socket.id}`);
+    });
+
+    // Listen for user events from the quiz app
+    socket.on("user:joined", (data) => {
+        console.log("👤 User joined:", data);
+        io.emit("user:update", data);
+    });
+
+    socket.on("user:attemptStarted", (data) => {
+        console.log("▶️ Attempt started:", data);
+        io.emit("user:update", data);
+    });
+
+    socket.on("user:scoreUpdated", (data) => {
+        console.log("📊 Score updated:", data);
+        io.emit("user:update", data);
+    });
+});
+
+// Initialize socket service
+socketService.initializeSocket(io);
+
+// Make io accessible in routes
+app.set("io", io);
+
+server.listen(PORT, () => {
     console.log(`🚀 Quiz Admin Backend running on port ${PORT}`);
     console.log(`📍 API available at: http://localhost:${PORT}`);
+    console.log(`🔌 WebSocket server running`);
     console.log(`🌐 Environment: ${process.env.NODE_ENV || "development"}`);
 });
 
-module.exports = app;
+module.exports = { app, io, server };

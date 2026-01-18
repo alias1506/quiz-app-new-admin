@@ -217,7 +217,7 @@ body {
   position: absolute !important;
   top: 100% !important;
   margin-top: 4px !important;
-  z-index: 9999 !important;
+  z-index: 99999 !important;
   display: block !important;
   opacity: 0;
   visibility: hidden;
@@ -408,7 +408,7 @@ body {
   left: 0 !important;
   right: auto !important;
   margin-top: 5px !important;
-  z-index: 9999 !important; // Ensure dropdown appears above all overflow containers
+  z-index: 99999 !important; // Ensure dropdown appears above all overflow containers
 
   // 2. Animation Logic (Persist display to allow transition)
   display: block !important;
@@ -603,9 +603,10 @@ body {
 
 // Override Bootstrap's default card spacing
 .card {
-  > .card-header,
-  > .card-body,
-  > .card-footer {
+
+  >.card-header,
+  >.card-body,
+  >.card-footer {
     padding: 1rem !important;
   }
 }
@@ -614,6 +615,7 @@ body {
 // but ensure equal padding on all sides
 .overflow-auto,
 .overflow-hidden {
+
   &.card-body,
   &[class*="CCardBody"] {
     padding: 1rem !important;

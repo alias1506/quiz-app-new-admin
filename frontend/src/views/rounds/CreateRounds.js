@@ -536,9 +536,16 @@ const CreateRounds = () => {
     const selectedQuiz = quizzes.find(q => q._id === roundData.quizId)
     const filteredRounds = allRounds.filter(r => r.quizId === roundData.quizId)
 
-    // Improved usedSetIds calculation: uses the actual rounds data which is populated
+    // Improved usedSetIds calculation: exclude current round by ID or NAME
+    // This allows sets to be shared within same-named rounds (for parts)
     const usedSetIds = filteredRounds
-        .filter(r => r._id !== selectedExistingRound?._id)
+        .filter(r => {
+            // Exclude if editing this exact round
+            if (r._id === selectedExistingRound?._id) return false
+            // Exclude if round has the same name (allows parts of same round to share sets)
+            if (roundData.name && r.name === roundData.name) return false
+            return true
+        })
         .flatMap(r => {
             const rSets = r.selectedSets || r.sets || []
             return rSets.map(s => typeof s === 'object' ? s._id : s)
@@ -1195,19 +1202,29 @@ const CreateRounds = () => {
                                             const isUsed = usedSetIds.includes(set._id)
 
                                             // Determine selection based on mode
-                                            let isSelected = roundData.selectedSets.includes(set._id)
+                                            // For parts mode: check if set is in ANY part of THIS round
+                                            // For normal mode: check overall selectedSets
+                                            let isSelected
+                                            if (roundData.hasParts && roundData.parts && roundData.parts.length > 0) {
+                                                // Check if this set is in ANY part of the current round
+                                                isSelected = roundData.parts.some(part =>
+                                                    (part.sets || []).includes(set._id)
+                                                )
+                                            } else {
+                                                isSelected = roundData.selectedSets.includes(set._id)
+                                            }
 
                                             const isInsufficient = (set.questionCount || 0) < 5
 
-                                            // A set is ONLY disabled for CLICK if:
-                                            // 1. It is used in another round AND it's NOT selected in THIS round (can't select it)
+                                            // A set is disabled if:
+                                            // 1. It is used in ANOTHER round AND it's NOT selected in THIS round (any part)
                                             // 2. It has insufficient questions
-                                            // We allow clicking if it IS selected, so the user can UNSELECT it even if it's "used" elsewhere
+                                            // Within the SAME round, sets can be shared between parts
                                             const isDisabled = (isUsed && !isSelected) || isInsufficient
 
                                             const title = isUsed
                                                 ? isSelected
-                                                    ? "This set is also in another round. Click to remove from this round."
+                                                    ? "This set is used in another round. Click to remove from this round."
                                                     : "This set is already assigned to another round in this quiz"
                                                 : isInsufficient
                                                     ? "Set must have at least 5 questions"
