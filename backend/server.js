@@ -148,7 +148,11 @@ const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
         origin: process.env.NODE_ENV === "production"
-            ? [process.env.FRONTEND_URL, process.env.USER_APP_URL]
+            ? [
+                process.env.FRONTEND_URL || "https://quiz-app-new-admin.onrender.com",
+                "https://quiz-app-wpgi.onrender.com", // Student app backend
+                "https://quiz-app-wpgi.onrender.com", // Student app frontend
+            ]
             : ["http://localhost:8080", "http://localhost:5173", "http://localhost:3000"],
         methods: ["GET", "POST"],
         credentials: true,
