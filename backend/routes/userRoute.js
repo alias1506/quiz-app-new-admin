@@ -143,23 +143,67 @@ router.post("/", async (req, res) => {
 });
 
 // @route   DELETE /api/users/:id
-// @desc    Delete a user
+// @desc    Delete a user or a specific quiz part registration
 router.delete("/:id", async (req, res) => {
     try {
-        // Extract the actual user ID (remove the part suffix if present)
         const idParam = req.params.id;
-        const userId = idParam.includes('_') ? idParam.split('_')[0] : idParam;
 
-        await User.findByIdAndDelete(userId);
-        res.json({ message: "User deleted successfully" });
+        if (idParam.includes('_')) {
+            const [userId, ...partParts] = idParam.split('_');
+            const partName = partParts.join('_'); // Rejoin in case part name has underscores
+
+            const user = await User.findById(userId);
+            if (!user) {
+                return res.status(404).json({ message: "User not found" });
+            }
+
+            // Remove all attempts for this specific part
+            const initialAttemptCount = user.attempts ? user.attempts.length : 0;
+            if (user.attempts) {
+                user.attempts = user.attempts.filter(a => a.quizPart !== partName);
+            }
+
+            // If this was the user's current displayed part, update it
+            if (user.quizPart === partName) {
+                if (user.attempts && user.attempts.length > 0) {
+                    // Switch to the first available part from remaining attempts
+                    const nextAttempt = user.attempts[0];
+                    user.quizPart = nextAttempt.quizPart;
+                    user.quizName = nextAttempt.quizName;
+                    user.score = nextAttempt.score;
+                    user.total = nextAttempt.total;
+                } else {
+                    user.quizPart = null;
+                    user.quizName = null;
+                    user.score = 0;
+                    user.total = 0;
+                }
+            }
+
+            // If no more attempts and no more parts, delete user entirely
+            if ((!user.attempts || user.attempts.length === 0) && !user.quizPart) {
+                await User.findByIdAndDelete(userId);
+                return res.json({ message: "User deleted (no data remaining)" });
+            }
+
+            await user.save();
+            return res.json({ message: `Data for part "${partName}" removed` });
+        } else {
+            // Delete entire user record
+            const deleted = await User.findByIdAndDelete(idParam);
+            if (!deleted) {
+                return res.status(404).json({ message: "User not found" });
+            }
+            res.json({ message: "User record deleted successfully" });
+        }
     } catch (err) {
-        console.error("Error deleting user:", err);
+        console.error("Error deleting user/part:", err);
         res.status(500).json({ message: "Server error" });
     }
 });
 
 // @route   POST /api/users/bulk-delete
-// @desc    Delete multiple users
+// @desc    Delete multiple users or specific quiz parts
 router.post("/bulk-delete", async (req, res) => {
     try {
         const { ids } = req.body;
@@ -168,14 +212,66 @@ router.post("/bulk-delete", async (req, res) => {
             return res.status(400).json({ message: "Invalid request" });
         }
 
-        // Extract actual user IDs (remove part suffixes)
-        const userIds = ids.map(id => id.includes('_') ? id.split('_')[0] : id);
-        const uniqueUserIds = [...new Set(userIds)]; // Remove duplicates
+        const entireUserIds = [];
+        const partSpecificMap = {}; // { userId: [partNames] }
 
-        await User.deleteMany({ _id: { $in: uniqueUserIds } });
-        res.json({ message: "Users deleted successfully" });
+        ids.forEach(id => {
+            if (id.includes('_')) {
+                const [userId, ...partParts] = id.split('_');
+                const partName = partParts.join('_');
+                if (!partSpecificMap[userId]) partSpecificMap[userId] = [];
+                partSpecificMap[userId].push(partName);
+            } else {
+                entireUserIds.push(id);
+            }
+        });
+
+        // 1. Delete entire users
+        if (entireUserIds.length > 0) {
+            await User.deleteMany({ _id: { $in: entireUserIds } });
+        }
+
+        // 2. Handle part-specific deletions for users NOT entirely deleted
+        const remainingUserIds = Object.keys(partSpecificMap).filter(id => !entireUserIds.includes(id));
+
+        for (const userId of remainingUserIds) {
+            const user = await User.findById(userId);
+            if (!user) continue;
+
+            const partsToDelete = partSpecificMap[userId];
+
+            // Filter out attempts for the specified parts
+            if (user.attempts) {
+                user.attempts = user.attempts.filter(a => !partsToDelete.includes(a.quizPart));
+            }
+
+            // Update top-level if necessary
+            if (partsToDelete.includes(user.quizPart)) {
+                if (user.attempts && user.attempts.length > 0) {
+                    const nextAttempt = user.attempts[0];
+                    user.quizPart = nextAttempt.quizPart;
+                    user.quizName = nextAttempt.quizName;
+                    user.score = nextAttempt.score;
+                    user.total = nextAttempt.total;
+                } else {
+                    user.quizPart = null;
+                    user.quizName = null;
+                    user.score = 0;
+                    user.total = 0;
+                }
+            }
+
+            // If user now has no data, delete them
+            if ((!user.attempts || user.attempts.length === 0) && !user.quizPart) {
+                await User.findByIdAndDelete(userId);
+            } else {
+                await user.save();
+            }
+        }
+
+        res.json({ message: "Selected records deleted successfully" });
     } catch (err) {
-        console.error("Error bulk deleting users:", err);
+        console.error("Error bulk deleting users/parts:", err);
         res.status(500).json({ message: "Server error" });
     }
 });
