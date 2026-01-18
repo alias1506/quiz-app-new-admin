@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create axios instance with base configuration
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
@@ -45,6 +45,7 @@ export const usersAPI = {
   getById: (id) => api.get(`/users/${id}`),
   delete: (id) => api.delete(`/users/${id}`),
   bulkDelete: (ids) => api.post('/users/bulk-delete', { ids }),
+  create: (data) => api.post('/users', data),
   getStats: () => api.get('/users/stats/summary'),
 };
 

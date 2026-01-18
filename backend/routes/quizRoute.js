@@ -59,6 +59,8 @@ router.post("/", async (req, res) => {
     }
 });
 
+const axios = require("axios");
+
 // Update quiz
 router.put("/:id", async (req, res) => {
     try {
@@ -72,6 +74,14 @@ router.put("/:id", async (req, res) => {
             }
         }
         const updated = await Quiz.findByIdAndUpdate(req.params.id, req.body, { new: true });
+
+        // Notify the user-facing app via webhook
+        try {
+            await axios.post('http://localhost:3000/api/quiz/notify-update');
+        } catch (err) {
+            console.error("Failed to notify student app:", err.message);
+        }
+
         res.json(updated);
     } catch (error) {
         res.status(400).json({ success: false, message: error.message });
@@ -83,6 +93,14 @@ router.delete("/:id", async (req, res) => {
     try {
         await Round.deleteMany({ quiz: req.params.id });
         await Quiz.findByIdAndDelete(req.params.id);
+
+        // Notify the user-facing app via webhook
+        try {
+            await axios.post('http://localhost:3000/api/quiz/notify-update');
+        } catch (err) {
+            console.error("Failed to notify student app:", err.message);
+        }
+
         res.json({ message: "Quiz and its rounds deleted successfully" });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });

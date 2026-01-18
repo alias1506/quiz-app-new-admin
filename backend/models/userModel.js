@@ -25,6 +25,12 @@ const userSchema = new mongoose.Schema(
                     total: { type: Number },
                     timeTaken: { type: Number }, // in seconds
                     quizId: { type: mongoose.Schema.Types.ObjectId, ref: "Quiz" },
+                    roundTimings: [
+                        {
+                            roundName: String,
+                            timeTaken: Number, // in seconds
+                        }
+                    ],
                 },
             ],
             default: [],

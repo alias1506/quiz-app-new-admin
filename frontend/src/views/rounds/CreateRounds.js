@@ -1442,6 +1442,36 @@ const CreateRounds = () => {
                 }
                 .quill-minimal-container .ql-snow .ql-picker-item { color: var(--cui-body-color); }
                 
+                /* AI Generating Overlay */
+                .ai-generating-overlay {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(255, 255, 255, 0.95);
+                    backdrop-filter: blur(4px);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 10;
+                    border-radius: 0.375rem;
+                }
+                
+                [data-coreui-theme="dark"] .ai-generating-overlay {
+                    background: rgba(30, 30, 46, 0.95);
+                }
+                
+                .ai-spin-sparkle {
+                    animation: sparkle-spin 2s linear infinite;
+                }
+                
+                @keyframes sparkle-spin {
+                    0% { transform: rotate(0deg) scale(1); }
+                    50% { transform: rotate(180deg) scale(1.1); }
+                    100% { transform: rotate(360deg) scale(1); }
+                }
+                
                 .x-small { font-size: 0.75rem; }
                 .hover-bg-opacity:hover { background-color: var(--cui-body-secondary-bg) !important; }
                 .transition-all { transition: all 0.2s ease-in-out; }

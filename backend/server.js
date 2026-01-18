@@ -3,6 +3,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const session = require("express-session");
+const path = require("path");
 
 const app = express();
 
@@ -15,7 +16,7 @@ app.use(
     cors({
         origin: process.env.NODE_ENV === "production"
             ? process.env.FRONTEND_URL
-            : "http://localhost:3000",
+            : "http://localhost:8080",
         credentials: true,
     })
 );
@@ -56,6 +57,7 @@ app.use(
         },
     })
 );
+
 
 // Routes
 const authRoutes = require("./routes/authRoute");
@@ -106,16 +108,33 @@ app.use((err, req, res, next) => {
     });
 });
 
-// 404 handler
-app.use((req, res) => {
-    res.status(404).json({
-        success: false,
-        message: "Route not found",
+// Serve static assets in production
+if (process.env.NODE_ENV === "production") {
+    // Set static folder
+    app.use(express.static(path.join(__dirname, "../frontend/build")));
+
+    app.get("*", (req, res) => {
+        // If it's an API route that's not found, send 404
+        if (req.originalUrl.startsWith("/api")) {
+            return res.status(404).json({
+                success: false,
+                message: "API Route not found",
+            });
+        }
+        res.sendFile(path.resolve(__dirname, "../frontend", "build", "index.html"));
     });
-});
+} else {
+    // 404 handler for development
+    app.use((req, res) => {
+        res.status(404).json({
+            success: false,
+            message: "Route not found",
+        });
+    });
+}
 
 // Start server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
     console.log(`🚀 Quiz Admin Backend running on port ${PORT}`);
     console.log(`📍 API available at: http://localhost:${PORT}`);

@@ -17,7 +17,7 @@ import {
     CCardFooter,
 } from '@coreui/react'
 import { usersAPI, quizzesAPI } from '../../services/api'
-import { Trophy, Medal, Clock, User, Calendar, Search, ChevronDown, Filter, RefreshCw, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, Folder } from 'lucide-react'
+import { Trophy, Medal, Clock, User, Calendar, Search, ChevronDown, Filter, RefreshCw, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, Folder, Trash2 } from 'lucide-react'
 import Table from '../../components/Table'
 import { format } from 'date-fns'
 
@@ -76,8 +76,13 @@ const Leaderboard = () => {
 
     const formatTime = (seconds) => {
         if (!seconds && seconds !== 0) return '--:--'
-        const mins = Math.floor(seconds / 60)
+        const hrs = Math.floor(seconds / 3600)
+        const mins = Math.floor((seconds % 3600) / 60)
         const secs = seconds % 60
+
+        if (hrs > 0) {
+            return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+        }
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
     }
 
@@ -199,9 +204,10 @@ const Leaderboard = () => {
                                     columns={[
                                         { label: '#', style: { width: '80px' }, className: 'ps-4' },
                                         { label: 'PLAYER' },
-                                        { label: 'SCORE / TOTAL', style: { width: '150px' }, className: 'text-center' },
-                                        { label: 'TIME', style: { width: '120px' }, className: 'text-center' },
-                                        { label: 'COMPLETION DATE', style: { width: '180px' }, className: 'pe-4' }
+                                        { label: 'SCORE / TOTAL', style: { width: '140px' }, className: 'text-center' },
+                                        { label: 'TIME', style: { width: '200px' }, className: 'text-center' },
+                                        { label: 'COMPLETION DATE', style: { width: '180px' }, className: 'pe-4' },
+                                        { label: 'ACTION', style: { width: '80px' }, className: 'text-center' }
                                     ]}
                                 >
                                     {leaderboardData.slice((currentPage - 1) * entriesPerPage, currentPage * entriesPerPage).map((user, index) => (
@@ -227,10 +233,22 @@ const Leaderboard = () => {
                                                     {user.score || 0} <span className="opacity-50 mx-1">/</span> {user.total || '0'}
                                                 </div>
                                             </CTableDataCell>
-                                            <CTableDataCell className="text-center" style={{ width: '120px' }}>
-                                                <div className="d-flex align-items-center justify-content-center gap-1 text-body-secondary fw-semibold small">
-                                                    <Clock size={14} className="opacity-50" />
-                                                    {formatTime(user.timeTaken)}
+                                            <CTableDataCell className="text-center" style={{ width: '200px' }}>
+                                                <div className="d-flex flex-column align-items-center justify-content-center text-body-secondary fw-semibold x-small">
+                                                    <div className="d-flex align-items-center gap-1 small mb-1">
+                                                        <Clock size={12} className="opacity-50" />
+                                                        <span>Total: {formatTime(user.timeTaken)}</span>
+                                                    </div>
+                                                    {user.roundTimings && user.roundTimings.length > 0 && (
+                                                        <div className="w-100 px-2" style={{ borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+                                                            {user.roundTimings.map((rt, i) => (
+                                                                <div key={i} className="d-flex justify-content-between gap-2 mt-1 opacity-75" style={{ fontSize: '10px' }}>
+                                                                    <span className="text-truncate" style={{ maxWidth: '100px' }}>{rt.roundName}</span>
+                                                                    <span className="text-nowrap">- {formatTime(rt.timeTaken)}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </CTableDataCell>
                                             <CTableDataCell className="pe-4" style={{ width: '180px' }}>
@@ -238,6 +256,25 @@ const Leaderboard = () => {
                                                     <Calendar size={13} className="opacity-50" />
                                                     {user.lastAttemptDate ? format(new Date(user.lastAttemptDate), 'dd/MM/yyyy HH:mm') : '--'}
                                                 </div>
+                                            </CTableDataCell>
+                                            <CTableDataCell className="text-center">
+                                                <CButton
+                                                    variant="ghost"
+                                                    className="p-1 text-danger hover-icon-bold"
+                                                    onClick={async () => {
+                                                        if (window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+                                                            try {
+                                                                await usersAPI.delete(user._id)
+                                                                setUsers(prev => prev.filter(u => u._id !== user._id))
+                                                            } catch (error) {
+                                                                console.error('Error deleting user:', error)
+                                                                alert('Failed to delete user')
+                                                            }
+                                                        }
+                                                    }}
+                                                >
+                                                    <Trash2 size={16} />
+                                                </CButton>
                                             </CTableDataCell>
                                         </CTableRow>
                                     ))}
@@ -367,6 +404,9 @@ const Leaderboard = () => {
                 .dropdown-menu-custom {
                     min-width: 200px;
                     border-radius: 12px;
+                }
+                .hover-icon-bold:hover svg {
+                    stroke-width: 2.5px;
                 }
             `}</style>
         </CRow >

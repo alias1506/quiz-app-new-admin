@@ -90,16 +90,20 @@ CRITICAL REQUIREMENTS:
             throw new Error("Groq API key not configured");
         }
 
-        const prompt = `Generate professional, well-structured instructions for a quiz round named "${roundName}". 
+        const prompt = `Generate a concise, professional description for a quiz round named "${roundName}".
 
-Structure requirements:
-1. Start with a professional <h2> heading using the round name.
-2. Follow with a brief, engaging 1-sentence intro about the round.
-3. Use a bulleted list for the main rules and format.
-4. If applicable, use sub-bullets for specific details like scoring (+ for correct, - for wrong) or time limits.
-5. Keep the total length concise and professional.
+Do NOT include the round name as a heading.
+Focus strictly on the rules and format.
 
-Return ONLY the text with HTML tags like <h2>, <p>, <ul>, <li> for formatting. No conversational filler.`;
+Structure Requirements:
+1. Start with a brief, engaging 1-sentence introduction (<p>).
+2. Follow immediately with a clear bulleted list (<ul>) of key rules:
+   - Mention the question type (e.g., multiple choice)
+   - Mention scoring (positive/negative points) without hardcoding values
+   - Mention time constraints
+3. End with a short encouraging closing sentence (<p>).
+
+Return ONLY raw HTML code (e.g., <p>, <ul>, <li>). Do not use <h3> or other headers. Keep it simple and clean.`;
 
         const chatCompletion = await this.groq.chat.completions.create({
             messages: [
